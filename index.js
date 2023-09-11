@@ -3,7 +3,8 @@ const app = express();
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const userRoute = require("./routes/user");
-const applyRoute = require("./routes/apply")
+const applyRoute = require("./routes/apply");
+const cors = require('cors');
 
 dotenv.config();
 const port = 8080
@@ -36,6 +37,13 @@ const port = 8080
 app.use(express.json());
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/apply", applyRoute);
+
+// Allow requests from any origin
+const corsOptions = {
+  origin: '*',
+};
+
+app.use(cors(corsOptions));
 
 app.get('/', (req, res) => res.send('Hello World!'))
 app.listen(port, () => console.log(`Server up and listening on port ${port}!`))
