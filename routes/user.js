@@ -3,6 +3,8 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const sendEmail = require('./../email'); // Import your Nodemailer configuration
+const fs = require('fs');
+const path = require('path');
 const {registerValidation, loginValidation} = require('../validation')
 
 
@@ -11,17 +13,15 @@ router.post('/register', async (req, res) =>{   // response gotten from the user
 
 // Validate the data before a user is created
     const {error} = registerValidation(req.body)
-    
     if(error) return res.status(400).send(error.details[0].message)
 
     //checking if the user is already in the database
     const emailExist = await User.findOne({email: req.body.email});
-    if (emailExist) return res.status(400).send({ message: 'Email already exists' });
+    if (emailExist) return res.status(200).send({ message: 'Email already exists' });
 
     // hash passwords
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
 
     //create a new user
     const user = new User ({
@@ -34,15 +34,17 @@ router.post('/register', async (req, res) =>{   // response gotten from the user
     try{
     const savedUser = await user.save();
 
-        
+      // Load the email template
+        const emailTemplatePath = path.join(__dirname, 'email-templates', 'signup-successful.html');
+        const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf-8');
+                
+
     await sendEmail({
         email: user.email,
         subject: 'Welcome to Seguro',
         message: 'Thank you for signing up for Seguro',
-        html: "<b>Thank you for signing up for Seguro</b>",
+        html: emailTemplate,
       });
-      
-  
 
         // res.send(savedUser); sends all the info of the saved user
         res.status(200).json({
@@ -50,9 +52,17 @@ router.post('/register', async (req, res) =>{   // response gotten from the user
             user: user._id,
           });
           
-    }catch (err){
-        res.status(400).send(err.details[0].message);
+    }catch (err) {
+        console.error('Error:', err);
+        if (err && err.details && err.details[0]) {
+          // If err, err.details, and err.details[0] are defined, send the error message
+          res.status(400).send(err.details[0].message);
+        } else {
+          // If any of the above properties are undefined, send a generic error message
+          res.status(400).send({ message: 'An error occurred' });
+        }
     }
+      
     });
 
 
@@ -78,8 +88,6 @@ router.post('/login', async (req, res) =>{
       success: true,
       user: user._id,
    });
-
-          ;
 
         
 
@@ -110,12 +118,17 @@ router.post('/forgotPassword', async (req, res, next) => {
        user.Otp = otpData.otp
        await user.save()
 
+        // Load the email template
+        const emailTemplatePath = path.join(__dirname, 'email-templates', 'otp.html');
+        const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf-8');
+                
   
        const message = `Your OTP code is ${otpData.otp}`
       await sendEmail({
         email: user.email,
         subject: 'Your OTP',
         message,
+        html: emailTemplate
       });
   
       res.status(200).json({

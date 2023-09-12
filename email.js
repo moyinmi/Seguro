@@ -49,6 +49,8 @@
     }
   });
 
+
+
   //2) Define the email options
   const mailOptions = {
     from: 'Seguro <hello@seguro.io>',
@@ -57,6 +59,8 @@
      text: options.message,
     html: options.html,
    };
+
+
 
    // 3) Actually send the email
    await transporter.sendMail(mailOptions);
