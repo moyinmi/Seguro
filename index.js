@@ -9,16 +9,6 @@ const cors = require('cors');
 dotenv.config();
 const port = 8080
 
-// connect to DB
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => {
-//     console.log("Connected to MongoDB!");
-//   })
-//   .catch((err) => {
-//     console.log(err);
-//   });
-
   mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -32,18 +22,25 @@ const port = 8080
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error);
   });
+// Allow requests from any origin
+// const corsOptions = {
+//   origin: '*',
+//   optionsSuccessStatus:204
+// };
+
+//app.use(cors(corsOptions));
+// Enable CORS for all routes
+app.use(cors());
+
+// Handle preflight (OPTIONS) requests
+app.options('*', cors());
 
 // middleware
 app.use(express.json());
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/apply", applyRoute);
 
-// Allow requests from any origin
-const corsOptions = {
-  origin: '*',
-};
 
-app.use(cors(corsOptions));
 
 app.get('/', (req, res) => res.send('Hello World!'))
 app.listen(port, () => console.log(`Server up and listening on port ${port}!`))
