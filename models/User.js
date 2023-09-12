@@ -7,13 +7,14 @@ const UserSchema = new mongoose.Schema({
         required: true,
         min: 3,
         max:30,
-        unique: true
+        
     },
     email: {
         type: String,
         required: true,
         max: 250,
         unique: true
+        
     },
     password :{
         type:String,
@@ -31,12 +32,12 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         max: 20,
-        unique: true
+        
     },
     IPISS: {
         type: String,
         required:true,
-        unique: true
+        
     }
 }
 );
